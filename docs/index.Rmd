@@ -1,0 +1,156 @@
+---
+title: '2'
+author: "zhang haifeng"
+date: "2024-03-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(readxl)
+
+data <- read_excel("tidydata.xlsx", sheet = 1)
+growth_model1 <- function(Time, a1, m0, M) {
+  M * (1 - (1 - (m0 / M)^(1 / 4)) * exp(-a1 * Time/(4 * M^(1 / 4))))^ 4
+}
+
+```
+
+```{r}
+#Cow
+  data_1 <- filter(data, Species == "1")
+  M_1 <- max(data_1$Mass)
+  m0_1 <- min(data_1$Mass)
+  fit1_1 <- nls(Mass ~ growth_model1(Time, a1, m0_1, M_1), data_1, start = list(a1 = 0.1))
+  a1_1 <- coef(fit1_1)
+  a2_1 <- (3 * a1_1 * M_1^(1/3))/(4 * M_1^(1/4))
+  γ_1 <- a1_1 / (4*M_1^(1/4))
+  data_1$Predicted1 <- predict(fit1_1, data_1)
+  data_1$Predicted2 <- 
+    M_1 * (1 - (1 - (m0_1 / M_1)^(1/3)) * exp(-a2_1 * data_1$Time/(3 * M_1^(1/3))))^3
+  
+  data_1$τ1 <- - log((1 - (m0_1 / M_1)^(1/4)) * exp(-γ_1 * data_1$Time))
+  data_1$r1 <- (data_1$Predicted1 / M_1)^(1/4)
+  data_1$τ2 <- -log((1 - (m0_1 / M_1)^(1/3)) * exp(-γ_1 * data_1$Time))
+  data_1$r2 <- (data_1$Predicted2 / M_1)^(1/3)
+  
+  
+p1 <- 
+  ggplot(data_1, aes(x = Time)) +
+    geom_point(aes(y = Mass), colour = "green") +
+    geom_point(aes(y = Predicted1), colour = "blue")+
+    geom_line(aes(y = Predicted1), colour = "blue", linetype = "dashed") +
+    geom_point(aes(y = Predicted2), colour = "red")+
+    geom_line(aes(y = Predicted2), colour = "red", linetype = "dashed")+
+    labs(title = "Cow",x = "Time(days)", y = "Mass(g)")+
+    theme_bw()+theme(panel.grid=element_blank())+
+    theme(plot.title = element_text(hjust = 0.5))+
+    scale_x_continuous(breaks = seq(0, 2500, by = 500),limits = c(0, 2500)) +
+    scale_y_continuous(breaks = seq(0, 450000, by = 50000),limits = c(0, 450000))
+p1
+```
+
+```{r}
+#Hen
+  data_2 <- filter(data, Species == "2")
+  M_2 <- max(data_2$Mass)
+  m0_2 <- min(data_2$Mass)
+  fit1_2 <- nls(Mass ~ growth_model1(Time, a1, m0_2, M_2), data_2, start = list(a1 = 0.1))
+  a1_2 <- coef(fit1_2)
+  a2_2 <- (3 * a1_2 * M_2^(1/3))/(4 * M_2^(1/4))
+  γ_2 <- a1_2/(4*M_2^(1/4))
+  data_2$Predicted1 <- predict(fit1_2, data_2)
+  data_2$Predicted2 <- 
+    M_2 * (1 - (1 - (m0_2 / M_2)^(1/3)) * exp(-a2_2 * data_2$Time/(3 * M_2^(1/3))))^3
+  
+  data_2$τ1 <- -log((1 - (m0_2 / M_2)^(1/4)) * exp(-γ_2 * data_2$Time))
+  data_2$r1 <- (data_2$Predicted1 / M_2)^(1/4)
+  data_2$τ2 <- -log((1 - (m0_2 / M_2)^(1/3)) * exp(-γ_2 * data_2$Time))
+  data_2$r2 <- (data_2$Predicted2 / M_2)^(1/3)
+  
+p2 <- 
+  ggplot(data_2, aes(x = Time)) +
+    geom_point(aes(y = Mass), colour = "green") +
+    geom_point(aes(y = Predicted1), colour = "blue")+
+    geom_line(aes(y = Predicted1), colour = "blue", linetype = "dashed") +
+    geom_point(aes(y = Predicted2), colour = "red")+
+    geom_line(aes(y = Predicted2), colour = "red", linetype = "dashed")+
+    labs(title = "Hen", x = "Time(days)", y = "Mass(g)")+
+    theme_bw()+theme(panel.grid=element_blank())+
+    theme(plot.title = element_text(hjust = 0.5))+
+    scale_x_continuous(breaks = seq(0, 400, by = 50),limits = c(0, 400)) +
+    scale_y_continuous(breaks = seq(0, 2500, by = 500),limits = c(0, 2500))
+p2
+```
+
+```{r}
+#Guppy
+  data_3 <- filter(data, Species == "3")
+  M_3 <- max(data_3$Mass)
+  m0_3 <- min(data_3$Mass)
+  fit1_3 <- nls(Mass ~ growth_model1(Time, a1, m0_3, M_3), data_3, start = list(a1 = 0.1))
+  a1_3 <- coef(fit1_3)
+  a2_3 <- (3 * a1_3 * M_3^(1/3))/(4 * M_3^(1/4))
+  γ_3 <- a1_3/(4*M_3^(1/4))
+
+  data_3$Predicted1 <- predict(fit1_3, data_3)
+  data_3$Predicted2 <- 
+    M_3 * (1 - (1 - (m0_3/M_3)^(1/3)) * exp(-a2_3 * data_3$Time/(3 * M_3^(1/3))))^3
+  
+  data_3$τ1 <- -log((1 - (m0_3 / M_3)^(1/4)) * exp(-γ_3 * data_3$Time))
+  data_3$r1 <- (data_3$Predicted1 / M_3)^(1/4)
+  data_3$τ2 <- -log((1 - (m0_3 / M_3)^(1/3)) * exp(-γ_3 * data_3$Time))
+  data_3$r2 <- (data_3$Predicted2 / M_3)^(1/3)  
+  
+  
+p3 <- 
+  ggplot(data_3, aes(x = Time)) +
+    geom_point(aes(y = Mass), colour = "green") +
+    geom_point(aes(y = Predicted1), colour = "blue")+
+    geom_line(aes(y = Predicted1), colour = "blue", linetype = "dashed") +
+    geom_point(aes(y = Predicted2), colour = "red")+
+    geom_line(aes(y = Predicted2), colour = "red", linetype = "dashed")+
+    labs(title = "Guppy", x = "Time(days)", y= "Mass(g)")+
+    theme_bw()+theme(panel.grid=element_blank())+
+    theme(plot.title = element_text(hjust = 0.5))+
+    scale_x_continuous(breaks = seq(0, 90, by = 10),limits = c(0, 90)) +
+    scale_y_continuous(breaks = seq(0, 0.16, by = 0.02),limits = c(0, 0.16))
+p3
+```
+
+```{r}
+p4 <-  
+  ggplot()+
+  geom_point(data = data_1, aes(x = τ1, y = r1), color = "green")+
+  geom_point(data = data_1, aes(x = τ2, y = r2), color = "green")+
+  geom_point(data = data_2, aes(x = τ1, y = r1), color = "blue")+
+  geom_point(data = data_2, aes(x = τ2, y = r2), color = "blue")+
+  geom_point(data = data_3, aes(x = τ1, y = r1), color = "red")+
+  geom_point(data = data_3, aes(x = τ2, y = r2), color = "red")+
+  geom_function(fun = function(x) 1 - exp(- x), color = "black", linetype = "dashed")+
+  labs(title= "Scaling collapse", x = "Dimensionless time", 
+       y = "Dimensionless mass ratio")+
+  theme_bw()+theme(panel.grid=element_blank())+
+  theme(plot.title = element_text(hjust = 0.5))+
+  scale_x_continuous(breaks = seq(0, 8, by = 1),limits = c(0, 8)) +
+  scale_y_continuous(breaks = seq(0, 1.2, by = 0.2),limits = c(0, 1.2))
+p4
+
+  
+```
+
+```{r}
+p5 <- 
+  ggpubr::ggarrange(p1, p3, p2, p4, nrow = 2, ncol = 2, labels = c('a', 'b', 'c', 'd'))
+p5
+
+#数据包含三个物种(cow,hen,guppy)的生长信息，其中cow为物种1，绘制p1图；hen为物种2，绘制p2图；guppy为物种3，绘制p3图。
+#M为质量最大值；m0为质量最小值；a1为west所使用的参数（α=3/4），经过公式拟合得到；a2为文献公式（1)中的参数（α=2/3），根据文献公式使用a1换算而得；r为无量纲质量比、τ为无量纲时间，根据公式（2）计算而得。
+
+
+```
+
